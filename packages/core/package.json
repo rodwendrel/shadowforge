@@ -1,0 +1,19 @@
+{
+  "name": "@shadowforge/core",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Rodrigo Wendrel",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "tsup": "^8.1.2"
+  },
+  "dependencies": {
+    "typescript": "^5.5.3"
+  }
+}

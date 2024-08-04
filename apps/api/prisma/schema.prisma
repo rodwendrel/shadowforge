@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String      @id @unique
+  // user          String      @unique
+  // email         String      @unique
+  // password      String
+  createdWorlds World[]     @relation("CreatedWorlds")
+  joinedWorlds  UserWorld[]
+
+  @@map("user")
+}
+
+model World {
+  id          Int         @id @unique @default(autoincrement())
+  name        String
+  description String
+  slots       Int
+  bannerURL   String
+  inviteCode  String      @unique @default(cuid())
+  creator     User        @relation("CreatedWorlds", fields: [creatorId], references: [id])
+  creatorId   String
+  players     UserWorld[]
+  playerId    Int
+
+  @@map("world")
+}
+
+model UserWorld {
+  userId  String
+  worldId Int
+  user    User  @relation(fields: [userId], references: [id])
+  world   World @relation(fields: [worldId], references: [id])
+
+  @@id([userId, worldId])
+  @@map("user_world")
+}
