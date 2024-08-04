@@ -1,6 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import useUser from "@/data/hooks/useUser";
+
+import useSession from "@/data/hooks/useSession";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");

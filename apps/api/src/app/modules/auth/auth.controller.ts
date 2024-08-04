@@ -13,7 +13,13 @@ export class AuthController {
 
     @Post('login')
     async login(@Body () user: User) {
-      return this.authService.login(user)
+      const result = await this.authService.login(user)
+      
+      return {
+        user: result.user,
+        email: result.email,
+        token: result.token
+      }
     }
 
     @Post('logout')

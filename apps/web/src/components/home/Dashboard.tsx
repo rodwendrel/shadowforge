@@ -3,7 +3,7 @@ import { IconPlus } from "@tabler/icons-react";
 import { IconLink } from "@tabler/icons-react";
 import Button from "../shared/Button";
 
-export default function Dashboard() {
+const Dashboard = () => {
   return (
     <main>
       <div className="flex gap-5">
@@ -28,3 +28,5 @@ export default function Dashboard() {
     </main>
   );
 }
+
+export default Dashboard;

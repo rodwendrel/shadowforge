@@ -53,7 +53,7 @@ export class AuthService {
     }
   }
 
-  async login({email, password}: User) {
+  async login({ email, password }: User) {
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password,
@@ -65,8 +65,9 @@ export class AuthService {
     }
 
     return {
-      email: data.user?.email || email,
-      user: data.user?.email || 'user',
+      user: data.user?.user_metadata.displayName,
+      email: data.user?.email,
+      token: data.session?.access_token,
     }
   }
 

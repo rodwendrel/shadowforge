@@ -12,8 +12,8 @@ export class AuthService {
 
      return {
         user,
-        password,
-        email: data.user?.email || email,
+        password: '',
+        email: data.user?.email,
       }
 
     } catch (error) {
@@ -29,9 +29,10 @@ export class AuthService {
       })
 
       return {
-        email: data.user?.email || email,
-        password,
-        user: data.user?.user || 'user',
+       user: data.user,
+       email: data.email,
+       token: data.token
+      
       }
       
     } catch (error) {
