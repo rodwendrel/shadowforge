@@ -1,8 +1,10 @@
 import { createContext, useState } from "react";
 import { User } from "@shadowforge/core";
 import { useRouter } from "next/navigation";
-import { AuthService } from "../services/authService";
+import { AuthService } from "@shadowforge/core/src/data/services/authService";
 import useLocalStorage from "../hooks/useLocalStorage";
+import useToast from "@/data/hooks/useToast";
+import getMessage from "@shadowforge/core/src/data/utils/toastUtils";
 
 export interface UserContextProps {
   user: User | null;
@@ -10,7 +12,6 @@ export interface UserContextProps {
   logout(): any;
   signup: (email: string, password: string, user: string) => Promise<void>;
 }
-
 const UserContext = createContext<UserContextProps>({} as any);
 
 export function UserProvider({ children }: any) {
@@ -18,6 +19,7 @@ export function UserProvider({ children }: any) {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
   const authService = new AuthService();
+  const { showToast } = useToast();
 
   /* Criar conta */
   async function signup(user: string, email: string, password: string) {
@@ -30,17 +32,24 @@ export function UserProvider({ children }: any) {
     try {
       await authService.signup(newUser);
       router.push("/login");
-      console.log("Cadastrado com sucesso!" + newUser);
-    } catch (error) {
-      console.error("Erro" + error);
+      console.log("Ctrado com sucesso!" + newUser);
+    } catch (error: any) {
+      const message = getMessage(error);
+      showToast(message, "error");
     }
   }
 
   /* Login */
   async function login(email: string, password: string) {
-    const response = await authService.login(email, password);
-    set("user", response);
-    router.push("/home");
+    try {
+      const response = await authService.login(email, password);
+      set("user", response);
+      setUser(user);
+      router.push("/home");
+    } catch(error: any) {
+      const message = getMessage(error);
+      showToast(message, "error");
+    }
   }
 
   /* Logout */

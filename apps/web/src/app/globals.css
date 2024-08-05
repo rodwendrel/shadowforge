@@ -10,12 +10,13 @@
 
 @layer components {
   .button-primary {
-    @apply bg-primary p-2 rounded text-white transition-all ease-in-out duration-300;
+    @apply bg-primary px-4 py-2 rounded text-white transition-all ease-in-out duration-300;
     @apply hover:bg-opacity-80 
   }
 
   .button-secondary {
-    @apply bg-zinc-700 p-2 rounded text-white;
+    @apply bg-zinc-700 px-4 py-2 rounded text-white;
+    @apply hover:bg-opacity-80 
   }
 
   .button-opaque {

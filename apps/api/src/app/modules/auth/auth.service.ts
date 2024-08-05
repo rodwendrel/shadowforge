@@ -1,67 +1,82 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User, ResponseUser } from '@shadowforge/core';
-import { createClient } from '@supabase/supabase-js'
 import { PrismaService } from 'src/app/db/prisma.service';
-import * as dotenv from 'dotenv'
-
-dotenv.config();
-
-const supabaseURL = process.env.SUPABASE_URL
-const supabaseKey = process.env.SUPABASE_ANON_KEY
-
-const supabase = createClient(supabaseURL, supabaseKey)
+import { SupabaseService } from 'src/app/services/supabase/supabase.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
-  async signup({user, email, password}: User): Promise<ResponseUser> {
+  constructor(
+    private prisma: PrismaService,
+    private supabase: SupabaseService
+  ) {}
 
-    const { data, error} = await supabase.auth.signUp({
-      email: email,
-      password: password,
-      options: {
-        data: { displayName: user }
+      /* Criação de conta */
+      async signup({ user, email, password }: User): Promise<ResponseUser> {
+        let data: any; 
+
+        try {
+          // Criar conta no Supabase
+          const signupResult = await this.supabase.getSignup(
+            email,
+            password,
+            {
+              data: { displayName: user }
+            }
+          );
+          data = signupResult.data; 
+          const error = signupResult.error;
+      
+          if (error) {
+            console.log("Supabase signup error:", error);
+            throw new HttpException({
+              status: error.status,
+              error: 'Supabase signup error',
+              message: error.message,
+            }, HttpStatus.BAD_REQUEST);
+          }
+
+          // Cria usuário no Prisma
+          const prismaCreate = await this.prisma.user.create({
+            data: {
+              id: data.user.id,
+            },
+          });
+      
+          return {
+            id: prismaCreate.id,
+            user,
+            email: data.user?.email || email,
+          };
+        } catch (prismaError) {
+          console.error('Prisma user creation error:', prismaError.response);
+      
+          // Deletar usuário do prisma caso ocorra erro
+          if (data?.user?.id) {
+            const { error: deleteError } = await this.supabase.getDelete(data.user.id);
+            if (deleteError) {
+              console.error('Failed to delete user from Supabase:', deleteError);
+            }
+          }
+      
+          throw new HttpException({
+            status: prismaError.response.status,
+            error: 'Prisma user creation error',
+            message: prismaError.response.message,
+          }, HttpStatus.UNPROCESSABLE_ENTITY);
+        }
       }
-    })
 
-    if(error) {
-      console.log("error", error)
-      throw error
-    }
-
-    try {
-      const prismaCreate = await this.prisma.user.create({
-        data: {
-          id: data.user.id,
-        },
-      });
-
-      return {
-        id: prismaCreate.id,
-        user,
-        email: data.user?.email || email,
-      };
-    } catch (prismaError) {
-      console.error('Prisma user creation error:', prismaError);
-
-      const { error: deleteError } = await supabase.auth.admin.deleteUser(data.user.id);
-      if (deleteError) {
-        console.error('Failed to delete user from Supabase:', deleteError);
-      }
-
-      throw prismaError;
-    }
-  }
-
+  /* Login de conta */
   async login({ email, password }: User) {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
-    })
+    const { data, error } = await this.supabase.getLogin(email, password);
 
     if(error) {
       console.log("error", error)
-      throw error
+      throw new HttpException({
+        status: error.status,
+        error: 'Supabase login error',
+        message: error.message
+      }, HttpStatus.BAD_REQUEST);
     }
 
     return {
@@ -72,16 +87,16 @@ export class AuthService {
   }
 
   async logout() {
-    try {
-      const { error } = await supabase.auth.signOut();
+      const { error } = await this.supabase.getLogout();
       if (error) {
         console.error("Error logging out", error);
-        throw error;
+        throw new HttpException({
+          status: error.status,
+          error: 'Supabase login error',
+          message: error.message
+        }, HttpStatus.BAD_REQUEST);
       }
       console.log('Logout successful');
-    } catch (error) {
-      console.error("Error during logout", error);
-      throw error;
-    }
+
   }
 }

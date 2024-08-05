@@ -1,8 +1,6 @@
-"use client";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+'use client';
+import { useState } from "react";
 import useUser from "@/data/hooks/useUser";
-import { register } from "module";
 
 export default function RegisterForm() {
   const [user, setUser] = useState("");
@@ -12,9 +10,8 @@ export default function RegisterForm() {
   const { signup } = useUser();
 
   const handleRegister = (event: React.FormEvent) => {
-    event.preventDefault(); // Prevent the default form submission behavior
+    event.preventDefault();
     signup(user, email, password);
-    console.log("enviado!");
   };
 
   return (

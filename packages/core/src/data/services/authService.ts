@@ -1,5 +1,5 @@
 import { User } from '@shadowforge/core';
-import api from './axiosService';
+import api from '@shadowforge/core/src/data/services/axiosService';
 
 export class AuthService {
   async signup({ user, email, password }: User): Promise<User> {
@@ -16,8 +16,10 @@ export class AuthService {
         email: data.user?.email,
       }
 
-    } catch (error) {
-      throw error
+    } catch (error: any) {
+      const errorData = JSON.parse(error.data);
+      console.error(errorData.data.message);
+      throw  errorData.data.message;
     }
   }
 
@@ -35,8 +37,10 @@ export class AuthService {
       
       }
       
-    } catch (error) {
-      throw error
+    } catch (error: any) {
+      const errorData = JSON.parse(error.data);
+      console.error(errorData.data.message);
+      throw  errorData.data.message;
     }
   }
 
